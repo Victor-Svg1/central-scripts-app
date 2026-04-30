@@ -661,6 +661,8 @@ function applyFilters() { ST.search=document.getElementById('srch').value; rende
 // FILTERS INIT
 // ═══════════════════════════════════════
 function initFilters() {
+  document.getElementById("fil-etapa").innerHTML = "";
+  document.getElementById("fil-nicho").innerHTML = "";
   const eC={},nC={};
   SCRIPTS.forEach(s=>{eC[s.etapa]=(eC[s.etapa]||0)+1; nC[s.nicho]=(nC[s.nicho]||0)+1});
 
