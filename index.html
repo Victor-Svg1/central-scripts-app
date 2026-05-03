@@ -328,6 +328,47 @@ a{color:inherit;text-decoration:none}
 .fade-in{animation:fadeUp .2s ease both}
 @media(max-width:1100px){.hist-panel{display:none}}
 @media(max-width:800px){.sidebar{display:none}}
+
+/* COLLECTION CARDS VIEW */
+.coll-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:14px}
+.coll-main-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px 16px;cursor:pointer;transition:var(--t);text-align:center}
+.coll-main-card:hover{border-color:var(--border2);box-shadow:var(--shadow);transform:translateY(-2px)}
+.coll-main-card-ico{font-size:28px;margin-bottom:10px;display:block}
+.coll-main-card-name{font-size:13px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px}
+.coll-main-card-cnt{font-size:11px;color:var(--text3)}
+.coll-main-card-new{border:1px dashed var(--border2);background:transparent;color:var(--text3)}
+.coll-main-card-new:hover{border-color:var(--wa);color:var(--wa);background:var(--wa-light)}
+/* ACCORDION */
+.acc-list{display:flex;flex-direction:column;gap:5px;margin-top:14px}
+.acc-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;transition:var(--t)}
+.acc-item:hover{border-color:var(--border2)}
+.acc-head{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;user-select:none}
+.acc-arrow{color:var(--text3);transition:transform .2s ease;flex-shrink:0}
+.acc-item.open .acc-arrow{transform:rotate(90deg)}
+.acc-num{font-family:var(--mono);font-size:9px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;flex-shrink:0}
+.acc-meta{flex:1;min-width:0}
+.acc-etapa{font-size:9px;font-weight:700;padding:1px 6px;border-radius:20px;display:inline-block;margin-bottom:3px}
+.acc-sit{font-size:13px;font-weight:600;letter-spacing:-.01em;line-height:1.3}
+.acc-body{display:none;border-top:1px solid var(--border)}
+.acc-item.open .acc-body{display:block}
+.acc-msg{margin:10px 14px;background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.15);border-left:3px solid var(--wa);border-radius:0 var(--r) var(--r) 0;padding:10px 12px;font-size:12px;line-height:1.75}
+[data-theme="light"] .acc-msg{background:rgba(34,197,94,.05)}
+.acc-foot{display:flex;gap:6px;padding:8px 14px 10px;border-top:1px solid var(--border)}
+/* SEARCH HIGHLIGHT */
+.hl{background:rgba(245,158,11,.25);color:var(--amber);border-radius:2px;padding:0 1px;font-weight:700}
+/* METRICS EMPTY */
+.m-empty{display:flex;flex-direction:column;align-items:center;text-align:center;padding:40px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:14px}
+/* RATING - subtle, show on hover */
+.sc-rating{display:flex;align-items:center;gap:6px;padding:0 12px 8px;font-size:11px;color:var(--text3);opacity:0;transition:opacity .2s}
+.sc-card:hover .sc-rating{opacity:1}
+/* HIST TOGGLE */
+.hist-toggle{position:absolute;right:calc(var(--hist) + 0px);top:50%;transform:translateY(-50%);width:18px;height:36px;background:var(--surface);border:1px solid var(--border);border-right:none;border-radius:4px 0 0 4px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;transition:var(--t);color:var(--text3)}
+.hist-toggle:hover{color:var(--text);background:var(--surface2)}
+.hist-panel.collapsed{width:0;min-width:0;border:none;overflow:hidden}
+.hist-panel.collapsed + .hist-toggle,.app-body{position:relative}
+/* COLL BACK */
+.coll-back{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);cursor:pointer;padding:4px 8px;border-radius:6px;transition:var(--t);border:1px solid transparent;width:fit-content;margin-bottom:12px}
+.coll-back:hover{background:var(--surface2);color:var(--text);border-color:var(--border)}
 </style>
 </head>
 <body>
@@ -449,6 +490,7 @@ a{color:inherit;text-decoration:none}
 
     <div class="main-area" id="mainArea"></div>
 
+    <button class="hist-toggle" id="histToggle" onclick="toggleHist()" title="Histórico">›</button>
     <!-- FIXED HISTORY PANEL -->
     <div class="hist-panel" id="histPanel">
       <div class="hist-panel-head">
@@ -653,11 +695,51 @@ function showSugg(v){
   const q=v.toLowerCase();
   const m=SCRIPTS.filter(s=>s.sit.toLowerCase().includes(q)||s.etapa.toLowerCase().includes(q)||s.nicho.toLowerCase().includes(q)||(s.tags||[]).some(t=>t.includes(q))).slice(0,6);
   if(!m.length){box.classList.remove('show');return}
-  box.innerHTML=m.map(s=>{const em=EM[s.etapa]||{color:'#22C55E',bg:'rgba(34,197,94,.12)'};const nm=NM[s.nicho]||NM['Todos'];return`<div class="ss-item" onclick="selSugg('${s.id}')"><span class="ss-etapa" style="background:${em.bg};color:${em.color}">${s.etapa}</span><span class="ss-text">${s.sit}</span><span class="ss-nicho" style="color:${nm.color}">${s.nicho}</span></div>`}).join('');
+  box.innerHTML=m.map(s=>{const em=EM[s.etapa]||{color:'#22C55E',bg:'rgba(34,197,94,.12)'};const nm=NM[s.nicho]||NM['Todos'];return`<div class="ss-item" onclick="selSugg('${s.id}')"><span class="ss-etapa" style="background:${em.bg};color:${em.color}">${s.etapa}</span><span class="ss-text">${highlight(s.sit,v)}</span><span class="ss-nicho" style="color:${nm.color}">${s.nicho}</span></div>`}).join('');
   box.classList.add('show');
 }
 function hideSugg(){document.getElementById('searchSugg').classList.remove('show')}
 function selSugg(id){hideSugg();document.getElementById('srch').value='';ST.search='';openFs(id)}
+
+// ── SYNONYMS MAP ──────────────────────────────────────
+const SYNS={
+  'caro':['objeção','preço'],'barato':['objeção','preço','concorrência'],
+  'grana':['objeção','preço'],'dinheiro':['objeção','preço'],'custo':['objeção','preço'],
+  'sumiu':['reativação'],'sumida':['reativação'],'desapareceu':['reativação'],
+  'não responde':['reativação'],'não respondeu':['reativação'],
+  'pensar':['objeção'],'vou pensar':['objeção'],'decidindo':['objeção'],
+  'começar':['abertura'],'abordar':['abertura'],'primeiro contato':['abertura'],
+  'fechar':['fechamento'],'comprar':['fechamento'],'confirmar':['fechamento'],
+  'concorrente':['objeção','concorrência'],'concorrência':['objeção'],
+  'desculpa':['objeção','reclamação'],'reclamação':['objeção'],
+  'indicação':['abertura'],'indicou':['abertura'],
+  'agendar':['fechamento'],'agendamento':['fechamento'],
+  'fidelizar':['pós-venda'],'retornar':['reativação','pós-venda'],
+  'status':['stories/status'],'stories':['stories/status'],
+  'academia':['academia'],'plano':['academia','consórcio'],
+  'consórcio':['consórcio'],'imóvel':['imobiliária'],
+  'entrega':['delivery'],'motoboy':['delivery'],
+  'cabelo':['salão de beleza'],'manicure':['salão de beleza'],
+  'consulta':['clínica'],'médico':['clínica'],
+  'roupa':['loja de roupas'],'moda':['loja de roupas'],
+  'serviço':['serviços'],'orçamento':['serviços'],
+  'revendedor':['revendedor'],'catálogo':['revendedor'],
+  'digital':['vendas online'],'curso':['vendas online'],
+};
+
+function expandSyns(q){
+  const terms=new Set([q]);
+  for(const[k,v] of Object.entries(SYNS)){
+    if(q.includes(k))v.forEach(t=>terms.add(t));
+  }
+  return [...terms];
+}
+
+function highlight(text, q){
+  if(!q||q.length<2)return text;
+  const esc=q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return text.replace(new RegExp('('+esc+')','gi'),'<span class="hl">$1</span>');
+}
 
 function autoFill(msg){
   if(!USER)return msg;
@@ -674,7 +756,7 @@ function getFiltered(){
   return list.filter(s=>{
     const eOk=ST.etapa==='Todas'||s.etapa===ST.etapa;
     const nOk=ST.nicho==='Todos'||s.nicho===ST.nicho||s.nicho==='Todos';
-    const qOk=!q||s.sit.toLowerCase().includes(q)||s.msg.toLowerCase().includes(q)||s.etapa.toLowerCase().includes(q)||s.nicho.toLowerCase().includes(q)||(s.tip&&s.tip.toLowerCase().includes(q))||(s.tags||[]).some(t=>t.includes(q));
+    const terms=expandSyns(q);const qOk=!q||terms.some(t=>s.sit.toLowerCase().includes(t)||s.msg.toLowerCase().includes(t)||s.etapa.toLowerCase().includes(t)||s.nicho.toLowerCase().includes(t)||(s.tip&&s.tip.toLowerCase().includes(t))||(s.tags||[]).some(tg=>tg.includes(t)));
     return eOk&&nOk&&qOk;
   });
 }
@@ -721,10 +803,9 @@ function renderMainArea(){
 }
 
 function renderScripts(area){
-  // Coleções sem coleção selecionada — prompt para selecionar
+  // Coleções sem coleção selecionada — mostrar cards
   if(ST.tab==='colls'&&!ST.selColl){
-    area.innerHTML=`<div class="empty fade-in"><div class="empty-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg></div><div class="empty-t">Selecione uma coleção</div><div class="empty-s">Clique em uma coleção na barra lateral para ver os scripts salvos nela.</div><button class="btn-create" style="margin-top:14px;padding:9px 20px;border-radius:var(--r)" onclick="openCollModal()">+ Criar nova coleção</button></div>`;
-    return;
+    renderCollCards(area);return;
   }
   const f=getFiltered();
   let title='Todos os Scripts';
@@ -750,6 +831,14 @@ function renderScripts(area){
     return;
   }
   if(!f.length){document.getElementById('sgrid').innerHTML=`<div class="empty"><div class="empty-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div><div class="empty-t">${ST.tab==='fav'?'Nenhum favorito':'Nenhum resultado'}</div><div class="empty-s">${ST.tab==='fav'?'Clique no ícone de coração em qualquer script.':'Tente outros filtros ou termos.'}</div></div>`;return}
+  if(ST.selColl){
+    // Accordion view inside collection
+    document.getElementById('sgrid').outerHTML='';
+    const back=`<div class="coll-back" onclick="ST.selColl=null;renderAll()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg> Todas as coleções</div>`;
+    const acc=f.map(s=>accItemHTML(s)).join('');
+    area.querySelector('.scripts-grid')?area.querySelector('.scripts-grid').outerHTML=`<div>${back}<div class="acc-list" id="accList">${acc||'<div class="empty" style="padding:40px"><div class="empty-t">Coleção vazia</div><div class="empty-s">Adicione scripts usando o ícone de pasta em qualquer card.</div></div>'}</div></div>`:null;
+    return;
+  }
   document.getElementById('sgrid').innerHTML=f.map((s,i)=>cardHTML(s,i*0.018)).join('');
 }
 
@@ -797,6 +886,70 @@ function cardHTML(s,delay=0){
   </div>`;
 }
 
+// COLLECTION CARDS VIEW
+function renderCollCards(area){
+  area.innerHTML=`
+    <div class="main-hdr fade-in"><div class="main-title">Coleções</div><div class="main-sub">${COLLS.length} coleção${COLLS.length!==1?'s':''} criada${COLLS.length!==1?'s':''}</div></div>
+    <div class="coll-cards-grid fade-in">
+      ${COLLS.map(c=>`<div class="coll-main-card" onclick="selColl('${c.id}')">
+        <span class="coll-main-card-ico">${c.icon}</span>
+        <div class="coll-main-card-name">${c.name}</div>
+        <div class="coll-main-card-cnt">${(c.items||[]).length} script${(c.items||[]).length!==1?'s':''}</div>
+      </div>`).join('')}
+      <div class="coll-main-card coll-main-card-new" onclick="openCollModal()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 8px;display:block"><path d="M12 5v14M5 12h14"/></svg>
+        <div style="font-size:12px;font-weight:600">Nova coleção</div>
+      </div>
+    </div>
+  `;
+}
+
+// ACCORDION ITEM
+function accItemHTML(s){
+  const em=EM[s.etapa]||{color:'#22C55E',bg:'rgba(34,197,94,.12)'};
+  const msg=autoFill(s.msg);
+  const note=FAV_NOTES[s.id];
+  return `<div class="acc-item" id="acc-${s.id}">
+    <div class="acc-head" onclick="toggleAcc('${s.id}')">
+      <svg class="acc-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      <span class="acc-num">${s.id}</span>
+      <div class="acc-meta">
+        <span class="acc-etapa" style="background:${em.bg};color:${em.color}">${em.icon} ${s.etapa}</span>
+        <div class="acc-sit">${s.sit}</div>
+      </div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-msg">${msg.replace(/\n/g,'<br>').replace(/\*(.*?)\*/g,'<strong>$1</strong>')}</div>
+      ${note?`<div class="sc-note" style="margin:0 14px 8px"><span>📝</span><span>${note}</span></div>`:''}
+      <div class="acc-foot">
+        <button class="btn-copy" onclick="copyScript('${s.id}')">Copiar</button>
+        <button class="btn-wa" onclick="shareWA('${s.id}')">WhatsApp</button>
+        <button class="btn-sq-s" onclick="removFromColl('${s.id}')" style="color:var(--red);border-color:rgba(239,68,68,.2)" title="Remover da coleção">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleAcc(id){const el=document.getElementById('acc-'+id);if(el)el.classList.toggle('open')}
+
+async function removFromColl(scriptId){
+  if(!ST.selColl)return;
+  await api(`/user/collections/${ST.selColl}/items/${scriptId}`,'DELETE').catch(()=>{});
+  const c=COLLS.find(x=>x.id===ST.selColl);
+  if(c)c.items=(c.items||[]).filter(i=>i!==scriptId);
+  renderAll();toast('Removido da coleção');
+}
+
+// HISTORY TOGGLE
+function toggleHist(){
+  const p=document.getElementById('histPanel');
+  const b=document.getElementById('histToggle');
+  p.classList.toggle('collapsed');
+  b.textContent=p.classList.contains('collapsed')?'‹':'›';
+}
+
 // ACTIONS
 async function copyScript(id){
   const s=SCRIPTS.find(x=>x.id===id);if(!s)return;
@@ -810,7 +963,13 @@ async function copyScript(id){
   if(HIST.length>50)HIST.pop();
   updateBadges();renderHist();toast('Script copiado!');
 }
-function shareWA(id){const s=SCRIPTS.find(x=>x.id===id);if(!s)return;window.open('https://wa.me/?text='+encodeURIComponent(autoFill(s.msg).replace(/\*(.*?)\*/g,'$1')),'_blank')}
+function shareWA(id){
+  const s=SCRIPTS.find(x=>x.id===id);if(!s)return;
+  const clean=autoFill(s.msg).replace(/\*(.*?)\*/g,'$1');
+  navigator.clipboard.writeText(clean).catch(()=>{});
+  window.open('https://wa.me/?text='+encodeURIComponent(clean),'_blank');
+  toast('Copiado e abrindo WhatsApp!');
+}
 
 async function rateScript(id,type){
   const prev=RATINGS[id];if(prev===type){delete RATINGS[id];api('/scripts/'+id+'/rate','POST',{rating:null}).catch(()=>{})}else{RATINGS[id]=type;api('/scripts/'+id+'/rate','POST',{rating:type}).catch(()=>{})}
@@ -947,8 +1106,8 @@ async function renderMetrics(area){
   area.innerHTML=`<div class="main-hdr fade-in"><div class="main-title">Métricas</div></div>
   <div class="m-grid fade-in"><div class="m-card"><div class="m-val" style="color:var(--wa)">${md.total_copies}</div><div class="m-lbl">Scripts copiados</div></div><div class="m-card"><div class="m-val" style="color:var(--amber)">${md.total_favorites}</div><div class="m-lbl">Favoritos</div></div><div class="m-card"><div class="m-val" style="color:var(--purple)">${COLLS.length}</div><div class="m-lbl">Coleções</div></div><div class="m-card"><div class="m-val" style="color:var(--blue)">${SCRIPTS.length}</div><div class="m-lbl">Scripts disponíveis</div></div></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" class="fade-in">
-    <div class="s-card"><div class="s-card-title">Por etapa</div>${Object.entries(md.by_etapa||{}).sort((a,b)=>b[1]-a[1]).map(([e,c])=>{const m=EM[e]||{color:'var(--wa)'};return`<div class="bar-row"><div class="bar-lbl"><span style="color:${m.color};font-weight:600">${e}</span><span>${c}x</span></div><div class="bar-t"><div class="bar-f" style="width:${(c/me)*100}%;background:${m.color}"></div></div></div>`}).join('')||'<div style="color:var(--text3);font-size:11px;text-align:center;padding:14px">Copie scripts para ver dados</div>'}</div>
-    <div class="s-card"><div class="s-card-title">Por nicho</div>${Object.entries(md.by_nicho||{}).sort((a,b)=>b[1]-a[1]).map(([n,c])=>`<div class="bar-row"><div class="bar-lbl"><span style="font-weight:600">${n}</span><span>${c}x</span></div><div class="bar-t"><div class="bar-f" style="width:${(c/mn)*100}%;background:var(--wa)"></div></div></div>`).join('')||'<div style="color:var(--text3);font-size:11px;text-align:center;padding:14px">Copie scripts para ver dados</div>'}</div>
+    <div class="s-card"><div class="s-card-title">Por etapa</div>${Object.entries(md.by_etapa||{}).sort((a,b)=>b[1]-a[1]).map(([e,c])=>{const m=EM[e]||{color:'var(--wa)'};return`<div class="bar-row"><div class="bar-lbl"><span style="color:${m.color};font-weight:600">${e}</span><span>${c}x</span></div><div class="bar-t"><div class="bar-f" style="width:${(c/me)*100}%;background:${m.color}"></div></div></div>`}).join('')||'<div class="m-empty"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.3;margin-bottom:10px"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><div style="font-size:12px;font-weight:600;margin-bottom:4px">Sem dados ainda</div><div style="font-size:11px;color:var(--text3)">Copie seus primeiros scripts para ver análises aqui.</div><button class="btn-create" style="margin-top:12px;padding:7px 16px;border-radius:var(--r);font-size:11px" onclick="goTab(\"scripts\")">Ver scripts →</button></div>'}</div>
+    <div class="s-card"><div class="s-card-title">Por nicho</div>${Object.entries(md.by_nicho||{}).sort((a,b)=>b[1]-a[1]).map(([n,c])=>`<div class="bar-row"><div class="bar-lbl"><span style="font-weight:600">${n}</span><span>${c}x</span></div><div class="bar-t"><div class="bar-f" style="width:${(c/mn)*100}%;background:var(--wa)"></div></div></div>`).join('')||'<div class="m-empty"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.3;margin-bottom:10px"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><div style="font-size:12px;font-weight:600;margin-bottom:4px">Sem dados ainda</div><div style="font-size:11px;color:var(--text3)">Copie seus primeiros scripts para ver análises aqui.</div><button class="btn-create" style="margin-top:12px;padding:7px 16px;border-radius:var(--r);font-size:11px" onclick="goTab(\"scripts\")">Ver scripts →</button></div>'}</div>
   </div>`;
 }
 
