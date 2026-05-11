@@ -450,6 +450,11 @@ a{color:inherit;text-decoration:none}
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
       Coleções <span class="tn-badge" id="bdg-colls">0</span>
     </div>
+    <div class="tn-divider"></div>
+    <div class="tn-item" data-tab="exclusivo" onclick="goTab('exclusivo',this)">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Exclusivo
+    </div>
     <div class="tn-item" data-tab="metrics" onclick="goTab('metrics',this)">
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
       Métricas
@@ -725,7 +730,7 @@ const SYNS={
   'serviço':['serviços'],'orçamento':['serviços'],
   'revendedor':['revendedor'],'catálogo':['revendedor'],
   'digital':['vendas online'],'curso':['vendas online'],
-};
+,'apertado':['objeção','preço'],'sem dinheiro':['objeção','preço'],'salgado':['objeção','preço'],'valores':['objeção','preço'],'desconto':['objeção','preço'],'parcelar':['objeção','preço','fechamento'],'depois':['objeção','reativação'],'mais tarde':['objeção','reativação'],'vou esperar':['objeção','reativação'],'deixa pra depois':['objeção'],'não preciso':['objeção'],'já tenho':['objeção','concorrência'],'marido':['objeção'],'esposa':['objeção'],'avaliar':['objeção','reativação'],'pesquisar':['objeção','reativação','concorrência'],'comparar':['objeção','concorrência'],'orçamento':['abertura','fechamento'],'proposta':['abertura','fechamento'],'cotação':['abertura','fechamento'],'bom dia':['abertura'],'boa tarde':['abertura'],'prazo':['objeção','fechamento'],'garantia':['objeção','fechamento'],'entrega':['objeção','fechamento'],'frete':['objeção','fechamento'],'promoção':['abertura','fechamento'],'última chance':['fechamento'],'suporte':['pós-venda','reclamação'],'cancelar':['reclamação','pós-venda'],'não funcionou':['reclamação'],'qualidade':['objeção','reclamação'],'primeira vez':['abertura'],'recomendação':['abertura']};
 
 function expandSyns(q){
   const terms=new Set([q]);
@@ -751,7 +756,7 @@ function getFiltered(){
   const q=ST.search.toLowerCase().trim();
   let list=SCRIPTS;
   if(ST.tab==='novidades') list=SCRIPTS.filter(s=>s._isNew);
-  else if(ST.selColl){const c=COLLS.find(x=>x.id===ST.selColl);list=c?SCRIPTS.filter(s=>(c.items||[]).includes(s.id)):[]}
+  else if(ST.selColl){const c=COLLS.find(x=>x.id===ST.selColl);list=c?SCRIPTS.filter(s=>(c.items||[]).map(String).includes(String(s.id))):[]}
   else if(ST.tab==='fav') list=SCRIPTS.filter(s=>FAVS.has(s.id));
   return list.filter(s=>{
     const eOk=ST.etapa==='Todas'||s.etapa===ST.etapa;
@@ -799,6 +804,7 @@ function renderMainArea(){
   if(['scripts','fav','colls','novidades'].includes(ST.tab))renderScripts(area);
   else if(ST.tab==='metrics')renderMetrics(area);
   else if(ST.tab==='settings')renderSettings(area);
+  else if(ST.tab==='exclusivo')renderExclusivo(area);
   else if(ST.tab==='sub')renderSub(area);
 }
 
@@ -938,7 +944,7 @@ async function removFromColl(scriptId){
   if(!ST.selColl)return;
   await api(`/user/collections/${ST.selColl}/items/${scriptId}`,'DELETE').catch(()=>{});
   const c=COLLS.find(x=>x.id===ST.selColl);
-  if(c)c.items=(c.items||[]).filter(i=>i!==scriptId);
+  if(c)c.items=(c.items||[]).filter(i=>String(i)!==String(scriptId));
   renderAll();toast('Removido da coleção');
 }
 
@@ -947,7 +953,9 @@ function toggleHist(){
   const p=document.getElementById('histPanel');
   const b=document.getElementById('histToggle');
   p.classList.toggle('collapsed');
-  b.textContent=p.classList.contains('collapsed')?'‹':'›';
+  const cl=p.classList.contains('collapsed');
+  b.textContent=cl?'‹':'›';
+  b.style.right=cl?'0px':'calc(var(--hist))';
 }
 
 // ACTIONS
@@ -1100,7 +1108,44 @@ function toggleDD(id){const menu=document.getElementById('dd-'+id);if(!menu)retu
 function closeDD(){document.querySelectorAll('.coll-dd-menu.show').forEach(m=>m.classList.remove('show'))}
 
 // OTHER TABS
-async function renderMetrics(area){
+async function renderExclusivo(area){
+  area.innerHTML='<div class="main-hdr fade-in"><div class="main-title">Conteúdo Exclusivo</div><div class="main-sub">Material exclusivo para membros PRO</div></div><div id="excl-grid" class="fade-in" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;padding:4px 0"><div style="color:var(--text3);font-size:13px;grid-column:1/-1;text-align:center;padding:40px">Carregando...</div></div>';
+  api('/members-content/public').then(d=>{
+    const items=(d&&d.content)||[];
+    const grid=document.getElementById('excl-grid');
+    if(!grid)return;
+    if(!items.length){grid.innerHTML='<div style="color:var(--text3);font-size:13px;grid-column:1/-1;text-align:center;padding:40px">Nenhum conteúdo exclusivo disponível ainda.</div>';return;}
+    grid.innerHTML=items.map(it=>{
+      const icons={'article':'📄','template':'📋','guide':'📚','video':'🎥'};
+      const ico=icons[it.type]||'📄';
+      const isNew=it.created_at&&(Date.now()-new Date(it.created_at).getTime())<30*86400000;
+      return `<div class="sc-card fade-in" style="cursor:pointer" onclick="openExclItem('${it.id}')">
+        <div class="sc-head"><span class="sc-num">${ico}</span><div class="sc-meta"><div class="sc-badges">
+          <span class="sc-badge" style="background:var(--wa-light);color:var(--wa)">${it.type||'artigo'}</span>
+          ${it.category?'<span class="sc-badge-nicho">'+it.category+'</span>':''}
+          ${isNew?'<span class="sc-badge-new">Novo</span>':''}
+        </div></div></div>
+        <div class="sc-sit">${it.title}</div>
+        ${it.description?'<div class="sc-tip">'+it.description+'</div>':''}
+      </div>`;
+    }).join('');
+  }).catch(()=>{const g=document.getElementById('excl-grid');if(g)g.innerHTML='<div style="color:var(--text3);font-size:13px;grid-column:1/-1;text-align:center;padding:40px">Erro ao carregar conteúdo.</div>';});
+}
+function openExclItem(id){
+  const m=document.createElement('div');m.className='modal-bg';m.style.display='flex';
+  m.innerHTML='<div class="modal-box" style="max-width:640px"><div class="modal-head"><div class="modal-title">Carregando...</div><button class="modal-x" onclick="this.closest('.modal-bg').remove()">✕</button></div><div class="modal-body" id="excl-body" style="min-height:100px;display:flex;align-items:center;justify-content:center;color:var(--text3)">⏳</div></div>';
+  document.body.appendChild(m);
+  api('/members-content/public/'+id).then(d=>{
+    if(!d||!d.item){m.remove();return;}
+    const it=d.item;
+    m.querySelector('.modal-title').textContent=it.title;
+    const b=document.getElementById('excl-body');
+    b.style.cssText='';
+    b.innerHTML=(it.video_url?'<div style="margin-bottom:16px"><video src="'+it.video_url+'" controls style="width:100%;border-radius:8px"></video></div>':'')+
+      '<div style="font-size:14px;line-height:1.7;white-space:pre-wrap">'+it.content+'</div>';
+  }).catch(()=>m.remove());
+}
+function renderMetrics(area){
   let md={total_copies:0,total_favorites:0,by_etapa:{},by_nicho:{}};try{md=await api('/user/metrics')||md}catch{}
   const me=Math.max(...Object.values(md.by_etapa||{}),1),mn=Math.max(...Object.values(md.by_nicho||{}),1);
   area.innerHTML=`<div class="main-hdr fade-in"><div class="main-title">Métricas</div></div>
