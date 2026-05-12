@@ -1132,19 +1132,28 @@ async function renderExclusivo(area){
   }).catch(()=>{const g=document.getElementById('excl-grid');if(g)g.innerHTML='<div style="color:var(--text3);font-size:13px;grid-column:1/-1;text-align:center;padding:40px">Erro ao carregar conteúdo.</div>';});
 }
 function openExclItem(id){
-  const m=document.createElement('div');m.className='modal-bg';m.style.display='flex';
-  m.innerHTML='<div class="modal-box" style="max-width:640px"><div class="modal-head"><div class="modal-title">Carregando...</div><button class="modal-x" onclick="this.closest('.modal-bg').remove()">✕</button></div><div class="modal-body" id="excl-body" style="min-height:100px;display:flex;align-items:center;justify-content:center;color:var(--text3)">⏳</div></div>';
+  const m=document.createElement('div');
+  m.className='modal-bg';
+  m.style.cssText='display:flex;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:300;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto';
+  const box=document.createElement('div');
+  box.className='modal-box';
+  box.style.cssText='max-width:640px;width:100%';
+  box.innerHTML='<div class="modal-head"><div class="modal-title">Carregando...</div><button class="modal-x" id="excl-close">✕</button></div><div class="modal-body" id="excl-body" style="min-height:80px;display:flex;align-items:center;justify-content:center;color:var(--text3)">⏳</div>';
+  m.appendChild(box);
   document.body.appendChild(m);
+  m.addEventListener('click',e=>{if(e.target===m)m.remove()});
+  document.getElementById('excl-close').onclick=()=>m.remove();
   api('/members-content/public/'+id).then(d=>{
     if(!d||!d.item){m.remove();return;}
     const it=d.item;
-    m.querySelector('.modal-title').textContent=it.title;
+    box.querySelector('.modal-title').textContent=it.title;
     const b=document.getElementById('excl-body');
     b.style.cssText='';
     b.innerHTML=(it.video_url?'<div style="margin-bottom:16px"><video src="'+it.video_url+'" controls style="width:100%;border-radius:8px"></video></div>':'')+
       '<div style="font-size:14px;line-height:1.7;white-space:pre-wrap">'+it.content+'</div>';
   }).catch(()=>m.remove());
 }
+
 function renderMetrics(area){
   let md={total_copies:0,total_favorites:0,by_etapa:{},by_nicho:{}};try{md=await api('/user/metrics')||md}catch{}
   const me=Math.max(...Object.values(md.by_etapa||{}),1),mn=Math.max(...Object.values(md.by_nicho||{}),1);
