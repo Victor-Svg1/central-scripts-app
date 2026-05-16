@@ -671,7 +671,7 @@ async function doCP(){
   try{await api('/auth/change-password','POST',{current_password:'TEMP',new_password:p1});document.getElementById('cpScreen').style.display='none';await loadScripts();showApp()}
   catch(e){er.style.display='block';er.textContent=e.message}
 }
-function doLogout(){TOKEN='';USER=null;SCRIPTS=[];FAVS=new Set();COLLS=[];HIST=[];RATINGS={};localStorage.removeItem('csp_token');document.getElementById('app').classList.remove('show');document.getElementById('login').style.display='flex'}
+async function doLogout(){TOKEN='';USER=null;SCRIPTS=[];FAVS=new Set();COLLS=[];HIST=[];RATINGS={};localStorage.removeItem('csp_token');document.getElementById('app').classList.remove('show');document.getElementById('login').style.display='flex'}
 function showForgot(){const e=prompt('Digite seu email:');if(!e)return;api('/auth/forgot-password','POST',{email:e}).then(()=>toast('Email enviado!')).catch(()=>{})}
 
 function toggleTheme(){
@@ -800,7 +800,7 @@ function goTab(tab,el){
   renderAll();
 }
 function renderAll(){renderMainArea();updateBadges();renderSbColls()}
-function renderMainArea(){
+async function renderMainArea(){
   const area=document.getElementById('mainArea');
   if(['scripts','fav','colls','novidades'].includes(ST.tab))renderScripts(area);
   else if(ST.tab==='metrics')renderMetrics(area);
@@ -1132,7 +1132,7 @@ async function renderExclusivo(area){
     }).join('');
   }).catch(()=>{const g=document.getElementById('excl-grid');if(g)g.innerHTML='<div style="color:var(--text3);font-size:13px;grid-column:1/-1;text-align:center;padding:40px">Erro ao carregar conteúdo.</div>';});
 }
-function openExclItem(id){
+async function openExclItem(id){
   const m=document.createElement('div');
   m.className='modal-bg';
   m.style.cssText='display:flex;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:300;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto';
@@ -1155,7 +1155,7 @@ function openExclItem(id){
   }).catch(()=>m.remove());
 }
 
-function renderMetrics(area){
+async function renderMetrics(area){
   let md={total_copies:0,total_favorites:0,by_etapa:{},by_nicho:{}};try{md=await api('/user/metrics')||md}catch{}
   const me=Math.max(...Object.values(md.by_etapa||{}),1),mn=Math.max(...Object.values(md.by_nicho||{}),1);
   area.innerHTML=`<div class="main-hdr fade-in"><div class="main-title">Métricas</div></div>
