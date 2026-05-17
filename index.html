@@ -655,6 +655,7 @@ async function doLogin(){
   try{
     const d=await api('/auth/login','POST',{email,password:pass});if(!d)return;
     TOKEN=d.token;USER=d.user;SETTINGS=d.settings||SETTINGS;localStorage.setItem('csp_token',TOKEN);
+    boot();
     if(USER.temp_password){showCP();return}
     FAV_NOTES=JSON.parse(localStorage.getItem('csp_fav_notes')||'{}');
     const[f,c,h,ra]=await Promise.all([api('/user/favorites'),api('/user/collections'),api('/user/history?limit=60'),api('/user/ratings')]);
