@@ -618,7 +618,7 @@ async function api(path,method='GET',body=null){
   const h={'Content-Type':'application/json'};
   if(TOKEN)h['Authorization']='Bearer '+TOKEN;
   const r=await fetch(API+path,{method,headers:h,body:body?JSON.stringify(body):undefined});
-  if(r.status===401){doLogout();return null}
+  if(r.status===401){if(TOKEN)doLogout();return null}
   const d=await r.json();
   if(!r.ok)throw new Error(d.error||'Erro');
   return d;
@@ -654,8 +654,9 @@ async function doLogin(){
   btn.textContent='Entrando...';btn.disabled=true;
   try{
     const d=await api('/auth/login','POST',{email,password:pass});if(!d)return;
+    if(!d||!d.token)throw new Error('Senha ou email incorretos. Tente novamente.');
     TOKEN=d.token;USER=d.user;SETTINGS=d.settings||SETTINGS;localStorage.setItem('csp_token',TOKEN);
-    boot();
+    location.reload();
     if(USER.temp_password){showCP();return}
     FAV_NOTES=JSON.parse(localStorage.getItem('csp_fav_notes')||'{}');
     const[f,c,h,ra]=await Promise.all([api('/user/favorites'),api('/user/collections'),api('/user/history?limit=60'),api('/user/ratings')]);
@@ -758,7 +759,7 @@ function getFiltered(){
   const q=ST.search.toLowerCase().trim();
   let list=SCRIPTS;
   if(ST.tab==='novidades') list=SCRIPTS.filter(s=>s._isNew);
-  else if(ST.selColl){const c=COLLS.find(x=>x.id===ST.selColl);list=c?SCRIPTS.filter(s=>(c.items||[]).map(String).includes(String(s.id))):[]}
+  else if(ST.selColl){const c=COLLS.find(x=>String(x.id)===String(ST.selColl));list=c?SCRIPTS.filter(s=>(c.items||[]).map(String).includes(String(s.id))):[]}
   else if(ST.tab==='fav') list=SCRIPTS.filter(s=>FAVS.has(s.id));
   return list.filter(s=>{
     const eOk=ST.etapa==='Todas'||s.etapa===ST.etapa;
@@ -818,7 +819,7 @@ function renderScripts(area){
   const f=getFiltered();
   let title='Todos os Scripts';
   if(ST.tab==='novidades')title='Novidades';
-  else if(ST.selColl){const c=COLLS.find(x=>x.id===ST.selColl);title=c?`${c.icon} ${c.name}`:'Coleção'}
+  else if(ST.selColl){const c=COLLS.find(x=>String(x.id)===String(ST.selColl));title=c?`${c.icon} ${c.name}`:'Coleção'}
   else if(ST.tab==='fav')title='Favoritos';
   else if(ST.etapa!=='Todas'||ST.nicho!=='Todos')title=[ST.etapa!=='Todas'?ST.etapa:'',ST.nicho!=='Todos'?ST.nicho:''].filter(Boolean).join(' · ');
 
@@ -945,7 +946,7 @@ function toggleAcc(id){const el=document.getElementById('acc-'+id);if(el)el.clas
 async function removFromColl(scriptId){
   if(!ST.selColl)return;
   await api(`/user/collections/${ST.selColl}/items/${scriptId}`,'DELETE').catch(()=>{});
-  const c=COLLS.find(x=>x.id===ST.selColl);
+  const c=COLLS.find(x=>String(x.id)===String(ST.selColl));
   if(c)c.items=(c.items||[]).filter(i=>String(i)!==String(scriptId));
   renderAll();toast('Removido da coleção');
 }
