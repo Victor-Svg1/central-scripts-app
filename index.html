@@ -633,7 +633,7 @@ async function boot(){
       if(!p){showLogin();return}
       USER=p;SETTINGS=s||SETTINGS;
       FAV_NOTES=JSON.parse(localStorage.getItem('csp_fav_notes')||'{}');
-      FAVS=new Set(f?.favorites||[]);COLLS=c?.collections||[];HIST=h?.history||[];RATINGS=ra?.ratings||{};
+      FAVS=new Set(f?.favorites||[]);COLLS=(c?.collections||[]).map(col=>({...col,items:(col.collection_items||[]).map(ci=>ci.script_id)}));HIST=h?.history||[];RATINGS=ra?.ratings||{};
       if(USER.temp_password){showCP();return}
       await loadScripts();showApp();
     }catch{showLogin()}
