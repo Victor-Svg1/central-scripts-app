@@ -648,23 +648,26 @@ function showApp(){
 function showCP(){document.getElementById('loading').style.display='none';document.getElementById('cpScreen').style.display='flex'}
 
 async function doLogin(){
-  const email=document.getElementById('l-email').value.trim(),pass=document.getElementById('l-pass').value;
-  const err=document.getElementById('loginErr'),btn=document.getElementById('loginBtn');
-  if(!email||!pass){err.style.display='block';err.textContent='Preencha email e senha';return}
-  btn.textContent='Entrando...';btn.disabled=true;
+  const email=document.getElementById('l-email').value.trim();
+  const senha=document.getElementById('l-pass').value;
+  const errEl=document.getElementById('loginErr');
+  const btn=document.querySelector('#login button[onclick]');
+  if(errEl){errEl.style.display='none';errEl.textContent='';}
+  if(btn){btn.disabled=true;btn.textContent='Entrando...';}
   try{
-    const d=await api('/auth/login','POST',{email,password:pass});if(!d)return;
-    if(!d||!d.token)throw new Error('Senha ou email incorretos. Tente novamente.');
-    TOKEN=d.token;USER=d.user;SETTINGS=d.settings||SETTINGS;localStorage.setItem('csp_token',TOKEN);
+    const d=await api('/auth/login','POST',{email,password:senha});
+    if(!d||!d.token)throw new Error('Email ou senha incorretos.');
+    TOKEN=d.token;USER=d.user;SETTINGS=d.settings||{};
+    if(USER&&USER.temp_password){showCP();return;}
+    FAV_NOTES=JSON.parse(localStorage.getItem('fav_notes')||'{}');
+    localStorage.setItem('TOKEN',TOKEN);
     location.reload();
-    if(USER.temp_password){showCP();return}
-    FAV_NOTES=JSON.parse(localStorage.getItem('csp_fav_notes')||'{}');
-    const[f,c,h,ra]=await Promise.all([api('/user/favorites'),api('/user/collections'),api('/user/history?limit=60'),api('/user/ratings')]);
-    FAVS=new Set(f?.favorites||[]);COLLS=c?.collections||[];HIST=h?.history||[];RATINGS=ra?.ratings||{};
-    document.getElementById('login').style.display='none';
-    await loadScripts();showApp();
-  }catch(e){err.style.display='block';err.textContent=e.message||'Email ou senha incorretos'}
-  finally{btn.textContent='Entrar →';btn.disabled=false}
+  }catch(e){
+    if(errEl){errEl.textContent=e.message||'Erro ao entrar. Tente novamente.';errEl.style.display='block';}
+    else alert(e.message||'Erro ao entrar.');
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='Entrar →';}
+  }
 }
 async function doCP(){
   const p1=document.getElementById('np1').value,p2=document.getElementById('np2').value,er=document.getElementById('cpErr');
