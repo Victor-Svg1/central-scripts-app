@@ -843,14 +843,7 @@ function renderScripts(area){
     return;
   }
   if(!f.length){document.getElementById('sgrid').innerHTML=`<div class="empty"><div class="empty-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div><div class="empty-t">${ST.tab==='fav'?'Nenhum favorito':'Nenhum resultado'}</div><div class="empty-s">${ST.tab==='fav'?'Clique no ícone de coração em qualquer script.':'Tente outros filtros ou termos.'}</div></div>`;return}
-  if(ST.selColl){
-    // Accordion view inside collection
-    document.getElementById('sgrid').outerHTML='';
-    const back=`<div class="coll-back" onclick="ST.selColl=null;renderAll()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg> Todas as coleções</div>`;
-    const acc=f.map(s=>accItemHTML(s)).join('');
-    area.querySelector('.scripts-grid')?area.querySelector('.scripts-grid').outerHTML=`<div>${back}<div class="acc-list" id="accList">${acc||'<div class="empty" style="padding:40px"><div class="empty-t">Coleção vazia</div><div class="empty-s">Adicione scripts usando o ícone de pasta em qualquer card.</div></div>'}</div></div>`:null;
-    return;
-  }
+  
   document.getElementById('sgrid').innerHTML=f.map((s,i)=>cardHTML(s,i*0.018)).join('');
 }
 
