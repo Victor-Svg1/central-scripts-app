@@ -660,7 +660,7 @@ async function doLogin(){
     TOKEN=d.token;USER=d.user;SETTINGS=d.settings||{};
     if(USER&&USER.temp_password){showCP();return;}
     FAV_NOTES=JSON.parse(localStorage.getItem('fav_notes')||'{}');
-    localStorage.setItem('TOKEN',TOKEN);
+    localStorage.setItem('csp_token',TOKEN);
     location.reload();
   }catch(e){
     if(errEl){errEl.textContent=e.message||'Erro ao entrar. Tente novamente.';errEl.style.display='block';}
