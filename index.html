@@ -1104,7 +1104,7 @@ function selColl(id){
   document.querySelectorAll('.tn-item').forEach(t=>t.classList.remove('active'));
   const t=document.querySelector('.tn-item[data-tab="colls"]');if(t)t.classList.add('active');
   document.getElementById('sidebar').classList.remove('hidden');
-  renderAll();
+  renderAll();renderMainArea();
 }
 function renderSbColls(){
   const sb=document.getElementById('sb-colls');if(!sb)return;
